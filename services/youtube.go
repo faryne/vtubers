@@ -5,6 +5,7 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 	"os"
+	"time"
 )
 
 type (
@@ -66,11 +67,20 @@ func (s *YoutubeStruct) GetVideo(videoId string) (*youtube.Video, error) {
 func (s *YoutubeStruct) GetLiveMessages(livechatId string, callback func(*youtube.LiveChatMessageListResponse) error) error {
 	req := s.Client.LiveChatMessages.List(livechatId, []string{"id", "snippet", "authorDetails"})
 
-	err := req.MaxResults(50).Pages(context.Background(), func(response *youtube.LiveChatMessageListResponse) error {
-		return callback(response)
-	})
-	if err != nil {
-		return err
+	var pageToken = ""
+	for {
+		resp, err := req.PageToken(pageToken).MaxResults(100).Do()
+		if err != nil {
+			return err
+		}
+		if len(resp.Items) == 0 {
+			break
+		}
+		if resp.NextPageToken != "" {
+			pageToken = resp.NextPageToken
+		}
+		callback(resp)
+		time.Sleep(150 * time.Millisecond)
 	}
 	return nil
 }
