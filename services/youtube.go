@@ -67,20 +67,16 @@ func (s *YoutubeStruct) GetVideo(videoId string) (*youtube.Video, error) {
 func (s *YoutubeStruct) GetLiveMessages(livechatId string, callback func(*youtube.LiveChatMessageListResponse) error) error {
 	req := s.Client.LiveChatMessages.List(livechatId, []string{"id", "snippet", "authorDetails"})
 
-	var pageToken = ""
-	for {
-		resp, err := req.PageToken(pageToken).MaxResults(100).Do()
-		if err != nil {
-			return err
-		}
-		if len(resp.Items) == 0 {
-			break
-		}
-		if resp.NextPageToken != "" {
-			pageToken = resp.NextPageToken
-		}
-		callback(resp)
+	ctx := context.Background()
+	select {
+	case <-ctx.Done():
+		time.Sleep(150 * time.Millisecond)
+	default:
 		time.Sleep(150 * time.Millisecond)
 	}
-	return nil
+	err := req.Pages(ctx, func(response *youtube.LiveChatMessageListResponse) error {
+		time.Sleep(150 * time.Millisecond)
+		return callback(response)
+	})
+	return err
 }
