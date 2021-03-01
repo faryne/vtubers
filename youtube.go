@@ -35,7 +35,7 @@ func New(filename string, channelId string) (*YoutubeStruct, error) {
 		ChannelId:   channelId,
 		Client:      client,
 		SearchList:  client.Search.List([]string{"snippet"}),
-		VideosList:  client.Videos.List([]string{"liveStreamingDetails", "snippet"}),
+		VideosList:  client.Videos.List([]string{"liveStreamingDetails", "snippet", "statistics"}),
 		ChannelList: client.Channels.List([]string{"snippet", "statistics"}),
 	}, nil
 }
@@ -63,17 +63,13 @@ func (s *YoutubeStruct) GetNowLive() (*youtube.SearchListResponse, error) {
 	return response, err
 }
 
-func (s *YoutubeStruct) GetVideo(videoId string) (*youtube.Video, error) {
+func (s *YoutubeStruct) GetVideo(videoId string) (*youtube.VideoListResponse, error) {
 	video, err := s.VideosList.Id(videoId).Do()
 
 	if err != nil {
 		return nil, err
 	}
-	if len(video.Items) == 0 {
-		return nil, nil
-	}
-	//video.Items[0].LiveStreamingDetails.ActualEndTime
-	return video.Items[0], nil
+	return video, nil
 }
 
 func (s *YoutubeStruct) GetLiveMessages(livechatId string, callback func(*youtube.LiveChatMessageListResponse) error) error {
