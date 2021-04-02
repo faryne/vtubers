@@ -35,7 +35,7 @@ func New(filename string, channelId string) (*YoutubeStruct, error) {
 		ChannelId:   channelId,
 		Client:      client,
 		SearchList:  client.Search.List([]string{"snippet"}),
-		VideosList:  client.Videos.List([]string{"liveStreamingDetails"}),
+		VideosList:  client.Videos.List([]string{"liveStreamingDetails", "snippet"}),
 		ChannelList: client.Channels.List([]string{"snippet", "statistics", "brandingSettings"}),
 	}, nil
 }
